@@ -30,9 +30,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    // Load saved user on app start
     const savedUser = localStorage.getItem('casino_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        const userData = JSON.parse(savedUser);
+        setUser(userData);
+      } catch (error) {
+        console.error('Error loading saved user:', error);
+        localStorage.removeItem('casino_user');
+      }
     }
   }, []);
 
@@ -40,55 +47,75 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(userData);
     localStorage.setItem('casino_user', JSON.stringify(userData));
     
-    // Save to users list
-    const users = JSON.parse(localStorage.getItem('casino_users') || '[]');
-    const existingUserIndex = users.findIndex((u: User) => u.id === userData.id);
-    if (existingUserIndex >= 0) {
-      users[existingUserIndex] = userData;
-    } else {
-      users.push(userData);
+    // Update users list with permanent saving
+    try {
+      const users = JSON.parse(localStorage.getItem('casino_users') || '[]');
+      const existingUserIndex = users.findIndex((u: User) => u.id === userData.id);
+      
+      if (existingUserIndex >= 0) {
+        users[existingUserIndex] = userData;
+      } else {
+        users.push(userData);
+      }
+      
+      localStorage.setItem('casino_users', JSON.stringify(users));
+      console.log('User saved permanently:', userData.username);
+    } catch (error) {
+      console.error('Error saving user data:', error);
     }
-    localStorage.setItem('casino_users', JSON.stringify(users));
   };
 
   const login = async (username: string, password: string): Promise<boolean> => {
-    const users = JSON.parse(localStorage.getItem('casino_users') || '[]');
-    const foundUser = users.find((u: any) => u.username === username && u.password === password);
-    
-    if (foundUser) {
-      const userData = { id: foundUser.id, username: foundUser.username, balance: foundUser.balance };
-      saveUser(userData);
-      return true;
+    try {
+      const users = JSON.parse(localStorage.getItem('casino_users') || '[]');
+      const foundUser = users.find((u: any) => u.username === username && u.password === password);
+      
+      if (foundUser) {
+        const userData = { id: foundUser.id, username: foundUser.username, balance: foundUser.balance };
+        saveUser(userData);
+        console.log('User logged in successfully:', username);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error during login:', error);
+      return false;
     }
-    return false;
   };
 
   const register = async (username: string, password: string): Promise<boolean> => {
-    const users = JSON.parse(localStorage.getItem('casino_users') || '[]');
-    const existingUser = users.find((u: any) => u.username === username);
-    
-    if (existingUser) {
-      return false; // User already exists
+    try {
+      const users = JSON.parse(localStorage.getItem('casino_users') || '[]');
+      const existingUser = users.find((u: any) => u.username === username);
+      
+      if (existingUser) {
+        return false; // User already exists
+      }
+
+      const newUser = {
+        id: Date.now().toString(),
+        username,
+        password,
+        balance: 1000 // Starting balance
+      };
+
+      users.push(newUser);
+      localStorage.setItem('casino_users', JSON.stringify(users));
+      
+      const userData = { id: newUser.id, username: newUser.username, balance: newUser.balance };
+      saveUser(userData);
+      console.log('User registered successfully:', username);
+      return true;
+    } catch (error) {
+      console.error('Error during registration:', error);
+      return false;
     }
-
-    const newUser = {
-      id: Date.now().toString(),
-      username,
-      password,
-      balance: 1000 // Starting balance
-    };
-
-    users.push(newUser);
-    localStorage.setItem('casino_users', JSON.stringify(users));
-    
-    const userData = { id: newUser.id, username: newUser.username, balance: newUser.balance };
-    saveUser(userData);
-    return true;
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('casino_user');
+    console.log('User logged out');
   };
 
   const updateBalance = (newBalance: number) => {

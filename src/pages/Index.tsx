@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from '../components/AuthContext';
 import LoginForm from '../components/LoginForm';
 import Dashboard from '../components/Dashboard';
 import DepositForm from '../components/DepositForm';
+import GameInfo from '../components/GameInfo';
 import SlotMachine from '../components/games/SlotMachine';
 import Roulette from '../components/games/Roulette';
 import Blackjack from '../components/games/Blackjack';
@@ -26,6 +27,8 @@ const CasinoApp: React.FC = () => {
         return <Dashboard onNavigate={setCurrentPage} />;
       case 'deposit':
         return <DepositForm onBack={() => setCurrentPage('dashboard')} />;
+      case 'gameinfo':
+        return <GameInfo onBack={() => setCurrentPage('dashboard')} onNavigate={setCurrentPage} />;
       case 'slot':
         return <SlotMachine onBack={() => setCurrentPage('dashboard')} />;
       case 'roulette':

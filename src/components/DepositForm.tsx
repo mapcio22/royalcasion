@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
 import { Button } from "@/components/ui/button";
@@ -45,6 +44,10 @@ const DepositForm: React.FC<DepositFormProps> = ({ onBack }) => {
     if (paymentMethod === 'card') {
       if (!cardNumber || !cvv || !expiryDate) {
         toast({ title: "Błąd", description: "Wypełnij wszystkie pola karty", variant: "destructive" });
+        return;
+      }
+      if (expiryDate.length < 5) {
+        toast({ title: "Błąd", description: "Wprowadź prawidłową datę ważności (MM/YY)", variant: "destructive" });
         return;
       }
     } else if (paymentMethod === 'blik') {
@@ -114,18 +117,26 @@ const DepositForm: React.FC<DepositFormProps> = ({ onBack }) => {
   };
 
   const formatExpiryDate = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{2,4}/g);
-    const match = matches && matches[0] || '';
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 2) {
-      parts.push(match.substring(i, i + 2));
+    // Remove all non-digits
+    const cleaned = value.replace(/\D/g, '');
+    
+    // Apply MM/YY format
+    if (cleaned.length >= 2) {
+      const month = cleaned.substring(0, 2);
+      const year = cleaned.substring(2, 4);
+      
+      // Validate month (01-12)
+      if (parseInt(month) > 12) {
+        return '12/' + year;
+      }
+      if (parseInt(month) === 0) {
+        return '01/' + year;
+      }
+      
+      return year ? `${month}/${year}` : month;
     }
-    if (parts.length > 1) {
-      return parts.join('/');
-    } else {
-      return match;
-    }
+    
+    return cleaned;
   };
 
   return (
@@ -159,8 +170,7 @@ const DepositForm: React.FC<DepositFormProps> = ({ onBack }) => {
                   <Button
                     key={quickAmount}
                     onClick={() => setAmount(quickAmount.toString())}
-                    variant="outline"
-                    className="border-purple-600 text-purple-400 hover:bg-purple-600 hover:text-white"
+                    className="bg-black text-white hover:bg-gray-800 border border-gray-600"
                   >
                     {quickAmount} PLN
                   </Button>
@@ -290,7 +300,7 @@ const DepositForm: React.FC<DepositFormProps> = ({ onBack }) => {
 
               <Button 
                 type="submit" 
-                className="w-full bg-green-600 hover:bg-green-700 text-white h-14 text-lg"
+                className="w-full bg-black text-white hover:bg-gray-800 border border-gray-600 h-14 text-lg"
                 disabled={!amount}
               >
                 {paymentMethod === 'card' && <CreditCard className="h-5 w-5 mr-2" />}

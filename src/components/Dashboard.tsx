@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Coins, CreditCard, LogOut, Gamepad2 } from 'lucide-react';
+import { Coins, CreditCard, LogOut, Gamepad2, BookOpen } from 'lucide-react';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
@@ -41,6 +41,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </CardContent>
             </Card>
             <Button
+              onClick={() => onNavigate('gameinfo')}
+              className="bg-black text-white hover:bg-gray-800 border border-gray-600"
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Zasady Gier
+            </Button>
+            <Button
               onClick={() => onNavigate('deposit')}
               className="bg-green-600 hover:bg-green-700"
             >
@@ -73,7 +80,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   </div>
                   <Button
                     onClick={() => onNavigate(game.id)}
-                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    className="w-full bg-black text-white hover:bg-gray-800 border border-gray-600"
                   >
                     <Gamepad2 className="h-4 w-4 mr-2" />
                     Graj teraz
