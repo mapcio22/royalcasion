@@ -1,13 +1,55 @@
-// Update this page (the content is just a fallback if you fail to update the page)
 
-const Index = () => {
+import React, { useState } from 'react';
+import { AuthProvider, useAuth } from '../components/AuthContext';
+import LoginForm from '../components/LoginForm';
+import Dashboard from '../components/Dashboard';
+import DepositForm from '../components/DepositForm';
+import SlotMachine from '../components/games/SlotMachine';
+import Roulette from '../components/games/Roulette';
+import GuessNumber from '../components/games/GuessNumber';
+import Mines from '../components/games/Mines';
+import { Toaster } from "@/components/ui/toaster";
+
+const CasinoApp: React.FC = () => {
+  const { user } = useAuth();
+  const [currentPage, setCurrentPage] = useState('dashboard');
+
+  if (!user) {
+    return <LoginForm />;
+  }
+
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <Dashboard onNavigate={setCurrentPage} />;
+      case 'deposit':
+        return <DepositForm onBack={() => setCurrentPage('dashboard')} />;
+      case 'slot':
+        return <SlotMachine onBack={() => setCurrentPage('dashboard')} />;
+      case 'roulette':
+        return <Roulette onBack={() => setCurrentPage('dashboard')} />;
+      case 'guess':
+        return <GuessNumber onBack={() => setCurrentPage('dashboard')} />;
+      case 'mines':
+        return <Mines onBack={() => setCurrentPage('dashboard')} />;
+      default:
+        return <Dashboard onNavigate={setCurrentPage} />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      {renderPage()}
+      <Toaster />
     </div>
+  );
+};
+
+const Index: React.FC = () => {
+  return (
+    <AuthProvider>
+      <CasinoApp />
+    </AuthProvider>
   );
 };
 
