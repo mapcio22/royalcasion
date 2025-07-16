@@ -6,6 +6,7 @@ import Dashboard from '../components/Dashboard';
 import DepositForm from '../components/DepositForm';
 import SlotMachine from '../components/games/SlotMachine';
 import Roulette from '../components/games/Roulette';
+import Blackjack from '../components/games/Blackjack';
 import GuessNumber from '../components/games/GuessNumber';
 import Mines from '../components/games/Mines';
 import { Toaster } from "@/components/ui/toaster";
@@ -28,6 +29,8 @@ const CasinoApp: React.FC = () => {
         return <SlotMachine onBack={() => setCurrentPage('dashboard')} />;
       case 'roulette':
         return <Roulette onBack={() => setCurrentPage('dashboard')} />;
+      case 'blackjack':
+        return <Blackjack onBack={() => setCurrentPage('dashboard')} />;
       case 'guess':
         return <GuessNumber onBack={() => setCurrentPage('dashboard')} />;
       case 'mines':
