@@ -9,6 +9,7 @@ import Roulette from '../components/games/Roulette';
 import Blackjack from '../components/games/Blackjack';
 import GuessNumber from '../components/games/GuessNumber';
 import Mines from '../components/games/Mines';
+import TexasPoker from '../components/games/TexasPoker';
 import { Toaster } from "@/components/ui/toaster";
 
 const CasinoApp: React.FC = () => {
@@ -35,6 +36,8 @@ const CasinoApp: React.FC = () => {
         return <GuessNumber onBack={() => setCurrentPage('dashboard')} />;
       case 'mines':
         return <Mines onBack={() => setCurrentPage('dashboard')} />;
+      case 'poker':
+        return <TexasPoker onBack={() => setCurrentPage('dashboard')} />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }

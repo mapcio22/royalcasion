@@ -18,7 +18,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     { id: 'roulette', name: '🎯 Ruletka', description: 'Obstawiaj liczby i kolory', cost: 'Dowolna stawka' },
     { id: 'blackjack', name: '🃏 Blackjack', description: 'Zbierz 21 punktów', cost: 'Dowolna stawka' },
     { id: 'guess', name: '🔢 Zgadnij Liczbę', description: 'Zgadnij liczbę od 1 do 10', cost: 'Dowolna stawka' },
-    { id: 'mines', name: '💣 Miny', description: 'Unikaj min na siatce 3x3', cost: 'Dowolna stawka' }
+    { id: 'mines', name: '💣 Miny', description: 'Unikaj min na siatce 6x6', cost: 'Dowolna stawka' },
+    { id: 'poker', name: '🃏 Texas Poker', description: 'Klasyczny Texas Hold\'em', cost: 'Dowolna stawka' }
   ];
 
   return (
@@ -58,7 +59,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </div>
 
         {/* Games Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
           {games.map((game) => (
             <Card key={game.id} className="bg-gray-900 border-gray-700 hover:border-purple-500 transition-colors cursor-pointer">
               <CardHeader>

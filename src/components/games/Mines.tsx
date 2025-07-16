@@ -38,6 +38,7 @@ const Mines: React.FC<MinesProps> = ({ onBack }) => {
       case 1: return 1.05;
       case 2: return 1.10;
       case 3: return 1.15;
+      case 12: return 2.50;
       default: return 1.05;
     }
   };
@@ -246,7 +247,7 @@ const Mines: React.FC<MinesProps> = ({ onBack }) => {
                                 : cell.isSafe
                                   ? 'bg-green-600 border-green-400'
                                   : 'bg-gray-600 border-gray-500'
-                              : 'bg-blue-600 border-blue-400 hover:bg-blue-500 cursor-pointer active:scale-95'
+                              : 'bg-red-600 border-red-400 hover:bg-red-500 cursor-pointer active:scale-95'
                         }`}
                       >
                         {cell.revealed && cell.isMine && '💣'}
@@ -354,6 +355,7 @@ const Mines: React.FC<MinesProps> = ({ onBack }) => {
                       <SelectItem value="1" className="text-white">1 mina (x1.05 baza)</SelectItem>
                       <SelectItem value="2" className="text-white">2 miny (x1.10 baza)</SelectItem>
                       <SelectItem value="3" className="text-white">3 miny (x1.15 baza)</SelectItem>
+                      <SelectItem value="12" className="text-white">12 min (x2.50 baza)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -390,7 +392,7 @@ const Mines: React.FC<MinesProps> = ({ onBack }) => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Bomb className="h-4 w-4 text-red-500" />
-                  <span>Wybierz liczbę min: <strong>1-3</strong></span>
+                  <span>Wybierz liczbę min: <strong>1-3 lub 12</strong></span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Shield className="h-4 w-4 text-green-500" />
@@ -402,7 +404,7 @@ const Mines: React.FC<MinesProps> = ({ onBack }) => {
                 </div>
                 <div className="border-t border-gray-600 pt-2 mt-3">
                   <div className="text-xs text-gray-400">Mnożniki bazowe:</div>
-                  <div className="text-xs">1 mina: x1.05 | 2 miny: x1.10 | 3 miny: x1.15</div>
+                  <div className="text-xs">1 mina: x1.05 | 2 miny: x1.10 | 3 miny: x1.15 | 12 min: x2.50</div>
                 </div>
               </CardContent>
             </Card>
