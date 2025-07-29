@@ -29,37 +29,56 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
+  const getUserIP = async (): Promise<string> => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip;
+    } catch (error) {
+      console.error('Error getting IP:', error);
+      return 'unknown';
+    }
+  };
+
   useEffect(() => {
-    // Load saved user on app start
-    const savedUser = localStorage.getItem('casino_user');
-    if (savedUser) {
+    // Load saved user on app start based on IP
+    const loadUserByIP = async () => {
       try {
-        const userData = JSON.parse(savedUser);
-        setUser(userData);
+        const userIP = await getUserIP();
+        const savedUser = localStorage.getItem(`casino_user_${userIP}`);
+        if (savedUser) {
+          const userData = JSON.parse(savedUser);
+          setUser(userData);
+        }
       } catch (error) {
         console.error('Error loading saved user:', error);
-        localStorage.removeItem('casino_user');
       }
-    }
+    };
+    
+    loadUserByIP();
   }, []);
 
-  const saveUser = (userData: User) => {
+  const saveUser = async (userData: User) => {
     setUser(userData);
-    localStorage.setItem('casino_user', JSON.stringify(userData));
     
-    // Update users list with permanent saving
     try {
+      const userIP = await getUserIP();
+      localStorage.setItem(`casino_user_${userIP}`, JSON.stringify(userData));
+      
+      // Update users list with IP-based saving
       const users = JSON.parse(localStorage.getItem('casino_users') || '[]');
-      const existingUserIndex = users.findIndex((u: User) => u.id === userData.id);
+      const existingUserIndex = users.findIndex((u: User & { ip: string }) => u.ip === userIP);
+      
+      const userDataWithIP = { ...userData, ip: userIP };
       
       if (existingUserIndex >= 0) {
-        users[existingUserIndex] = userData;
+        users[existingUserIndex] = userDataWithIP;
       } else {
-        users.push(userData);
+        users.push(userDataWithIP);
       }
       
       localStorage.setItem('casino_users', JSON.stringify(users));
-      console.log('User saved permanently:', userData.username);
+      console.log('User saved permanently for IP:', userIP, userData.username);
     } catch (error) {
       console.error('Error saving user data:', error);
     }
@@ -72,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (foundUser) {
         const userData = { id: foundUser.id, username: foundUser.username, balance: foundUser.balance };
-        saveUser(userData);
+        await saveUser(userData);
         console.log('User logged in successfully:', username);
         return true;
       }
@@ -103,7 +122,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('casino_users', JSON.stringify(users));
       
       const userData = { id: newUser.id, username: newUser.username, balance: newUser.balance };
-      saveUser(userData);
+      await saveUser(userData);
       console.log('User registered successfully:', username);
       return true;
     } catch (error) {
@@ -112,10 +131,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('casino_user');
-    console.log('User logged out');
+  const logout = async () => {
+    try {
+      const userIP = await getUserIP();
+      setUser(null);
+      localStorage.removeItem(`casino_user_${userIP}`);
+      console.log('User logged out for IP:', userIP);
+    } catch (error) {
+      console.error('Error during logout:', error);
+      setUser(null);
+    }
   };
 
   const updateBalance = (newBalance: number) => {

@@ -11,6 +11,9 @@ import Blackjack from '../components/games/Blackjack';
 import GuessNumber from '../components/games/GuessNumber';
 import Mines from '../components/games/Mines';
 import TexasPoker from '../components/games/TexasPoker';
+import Baccarat from '../components/games/Baccarat';
+import PlinkoBall from '../components/games/PlinkoRall';
+import Keno from '../components/games/Keno';
 import { Toaster } from "@/components/ui/toaster";
 
 const CasinoApp: React.FC = () => {
@@ -41,6 +44,12 @@ const CasinoApp: React.FC = () => {
         return <Mines onBack={() => setCurrentPage('dashboard')} />;
       case 'poker':
         return <TexasPoker onBack={() => setCurrentPage('dashboard')} />;
+      case 'baccarat':
+        return <Baccarat onBack={() => setCurrentPage('dashboard')} />;
+      case 'plinko':
+        return <PlinkoBall onBack={() => setCurrentPage('dashboard')} />;
+      case 'keno':
+        return <Keno onBack={() => setCurrentPage('dashboard')} />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
