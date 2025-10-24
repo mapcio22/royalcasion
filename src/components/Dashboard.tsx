@@ -4,14 +4,37 @@ import { useAuth } from './AuthContext';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Coins, CreditCard, LogOut, Gamepad2, BookOpen } from 'lucide-react';
+import { Coins, CreditCard, Gift, Gamepad2, BookOpen, Clock } from 'lucide-react';
+import { toast } from "@/hooks/use-toast";
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
-  const { user, logout } = useAuth();
+  const { user, claimFreeCoins, timeUntilNextClaim } = useAuth();
+
+  const formatTime = (ms: number) => {
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleClaimCoins = () => {
+    const success = claimFreeCoins();
+    if (success) {
+      toast({
+        title: "Darmowe żetony!",
+        description: "Otrzymałeś 500 PLN!",
+      });
+    } else {
+      toast({
+        title: "Zbyt wcześnie",
+        description: `Następne darmowe żetony za ${formatTime(timeUntilNextClaim)}`,
+        variant: "destructive"
+      });
+    }
+  };
 
   const games = [
     { id: 'slot', name: '🎰 Jednoręki Bandyta', description: 'Klasyczny slot z symbolami emoji', cost: '100 PLN' },
@@ -55,12 +78,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               Wpłać
             </Button>
             <Button
-              onClick={logout}
-              variant="outline"
-              className="border-gray-600 text-white hover:bg-gray-800"
+              onClick={handleClaimCoins}
+              disabled={timeUntilNextClaim > 0}
+              className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
             >
-              <LogOut className="h-4 w-4 mr-2" />
-              Wyloguj
+              {timeUntilNextClaim > 0 ? (
+                <>
+                  <Clock className="h-4 w-4 mr-2" />
+                  {formatTime(timeUntilNextClaim)}
+                </>
+              ) : (
+                <>
+                  <Gift className="h-4 w-4 mr-2" />
+                  Odbierz 500 PLN
+                </>
+              )}
             </Button>
           </div>
         </div>

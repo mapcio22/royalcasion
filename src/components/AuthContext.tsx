@@ -5,15 +5,15 @@ interface User {
   id: string;
   username: string;
   balance: number;
+  lastFreeCoins?: number;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<boolean>;
-  register: (username: string, password: string) => Promise<boolean>;
-  logout: () => void;
   updateBalance: (newBalance: number) => void;
   deposit: (amount: number) => void;
+  claimFreeCoins: () => boolean;
+  timeUntilNextClaim: number;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +28,7 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [timeUntilNextClaim, setTimeUntilNextClaim] = useState<number>(0);
 
   const getUserIP = async (): Promise<string> => {
     try {
@@ -41,22 +42,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Load saved user on app start based on IP
-    const loadUserByIP = async () => {
+    // Auto-create user on app start based on IP
+    const loadOrCreateUser = async () => {
       try {
         const userIP = await getUserIP();
         const savedUser = localStorage.getItem(`casino_user_${userIP}`);
+        
         if (savedUser) {
           const userData = JSON.parse(savedUser);
           setUser(userData);
+        } else {
+          // Create new user automatically
+          const newUser: User = {
+            id: Date.now().toString(),
+            username: `Gracz_${userIP.slice(-4)}`,
+            balance: 1000,
+            lastFreeCoins: Date.now()
+          };
+          await saveUser(newUser);
         }
       } catch (error) {
-        console.error('Error loading saved user:', error);
+        console.error('Error loading/creating user:', error);
       }
     };
     
-    loadUserByIP();
+    loadOrCreateUser();
   }, []);
+
+  // Timer for free coins countdown
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (user?.lastFreeCoins) {
+        const timePassed = Date.now() - user.lastFreeCoins;
+        const timeLeft = Math.max(0, 180000 - timePassed); // 3 minutes = 180000ms
+        setTimeUntilNextClaim(timeLeft);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [user?.lastFreeCoins]);
 
   const saveUser = async (userData: User) => {
     setUser(userData);
@@ -84,63 +108,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    try {
-      const users = JSON.parse(localStorage.getItem('casino_users') || '[]');
-      const foundUser = users.find((u: any) => u.username === username && u.password === password);
-      
-      if (foundUser) {
-        const userData = { id: foundUser.id, username: foundUser.username, balance: foundUser.balance };
-        await saveUser(userData);
-        console.log('User logged in successfully:', username);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error during login:', error);
-      return false;
-    }
-  };
-
-  const register = async (username: string, password: string): Promise<boolean> => {
-    try {
-      const users = JSON.parse(localStorage.getItem('casino_users') || '[]');
-      const existingUser = users.find((u: any) => u.username === username);
-      
-      if (existingUser) {
-        return false; // User already exists
-      }
-
-      const newUser = {
-        id: Date.now().toString(),
-        username,
-        password,
-        balance: 1000 // Starting balance
+  const claimFreeCoins = (): boolean => {
+    if (!user) return false;
+    
+    const timeSinceLastClaim = Date.now() - (user.lastFreeCoins || 0);
+    
+    if (timeSinceLastClaim >= 180000) { // 3 minutes
+      const updatedUser = {
+        ...user,
+        balance: user.balance + 500,
+        lastFreeCoins: Date.now()
       };
-
-      users.push(newUser);
-      localStorage.setItem('casino_users', JSON.stringify(users));
-      
-      const userData = { id: newUser.id, username: newUser.username, balance: newUser.balance };
-      await saveUser(userData);
-      console.log('User registered successfully:', username);
+      saveUser(updatedUser);
       return true;
-    } catch (error) {
-      console.error('Error during registration:', error);
-      return false;
     }
-  };
-
-  const logout = async () => {
-    try {
-      const userIP = await getUserIP();
-      setUser(null);
-      localStorage.removeItem(`casino_user_${userIP}`);
-      console.log('User logged out for IP:', userIP);
-    } catch (error) {
-      console.error('Error during logout:', error);
-      setUser(null);
-    }
+    
+    return false;
   };
 
   const updateBalance = (newBalance: number) => {
@@ -158,7 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateBalance, deposit }}>
+    <AuthContext.Provider value={{ user, updateBalance, deposit, claimFreeCoins, timeUntilNextClaim }}>
       {children}
     </AuthContext.Provider>
   );

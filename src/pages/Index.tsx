@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
-import { AuthProvider, useAuth } from '../components/AuthContext';
-import LoginForm from '../components/LoginForm';
+import { AuthProvider } from '../components/AuthContext';
 import Dashboard from '../components/Dashboard';
 import DepositForm from '../components/DepositForm';
 import GameInfo from '../components/GameInfo';
@@ -17,12 +16,7 @@ import Keno from '../components/games/Keno';
 import { Toaster } from "@/components/ui/toaster";
 
 const CasinoApp: React.FC = () => {
-  const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState('dashboard');
-
-  if (!user) {
-    return <LoginForm />;
-  }
 
   const renderPage = () => {
     switch (currentPage) {
